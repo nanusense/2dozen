@@ -858,7 +858,6 @@ body {
 }
 .site-footer p:last-child { margin-bottom: 0; }
 
-.footer-brand { color: var(--text-dim); }
 
 .site-footer a {
   color: var(--text-dim);
