@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2Dozen admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="nimda.css">
+</head>
+<body>
+
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<div id="gate" class="gate">
+  <form id="gate-form" class="gate-card">
+    <div class="wordmark"><span class="wordmark-num">2</span>Dozen <span class="gate-tag">admin</span></div>
+    <p class="gate-sub">This is a light front door, not real security. Anyone can read the underlying data directly from Firestore; this page just makes it readable.</p>
+    <input id="gate-password" type="password" class="handle-input" autocomplete="off" placeholder="Password" aria-label="Password">
+    <p id="gate-error" class="handle-error" hidden>Wrong password.</p>
+    <button type="submit" class="action-btn action-btn-primary gate-submit">Enter</button>
+  </form>
+</div>
+
+<div id="dashboard" class="dashboard" hidden>
+  <header class="admin-header">
+    <div class="wordmark"><span class="wordmark-num">2</span>Dozen <span class="gate-tag">admin</span></div>
+    <div class="admin-header-actions">
+      <a href="../" class="admin-link">Back to game</a>
+      <button type="button" id="btn-lock" class="admin-link admin-link-btn">Lock</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="stat-cards">
+      <div class="stat admin-stat"><span id="stat-total" class="stat-num">0</span><span class="stat-label">Total solves</span></div>
+      <div class="stat admin-stat"><span id="stat-players" class="stat-num">0</span><span class="stat-label">Unique players</span></div>
+      <div class="stat admin-stat"><span id="stat-avgtime" class="stat-num">0:00</span><span class="stat-label">Avg. time</span></div>
+      <div class="stat admin-stat"><span id="stat-today" class="stat-num">0</span><span class="stat-label">Today's puzzle</span></div>
+    </div>
+
+    <section class="admin-section">
+      <h2>Stars</h2>
+      <div id="chart-stars" class="bar-chart"></div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Difficulty</h2>
+      <div id="chart-difficulty" class="bar-chart"></div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Solves per puzzle</h2>
+      <div id="chart-puzzles" class="bar-chart bar-chart-horizontal"></div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Recent activity</h2>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr><th>When</th><th>Puzzle</th><th>Name</th><th>Time</th><th>Stars</th></tr>
+          </thead>
+          <tbody id="activity-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p id="data-note" class="data-note"></p>
+  </main>
+</div>
+
+<script type="module" src="nimda.js"></script>
+</body>
+</html>

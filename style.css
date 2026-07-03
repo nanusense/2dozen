@@ -485,8 +485,13 @@ body {
   margin-top: 6px;
 }
 
-.share-btn {
+.share-wrap {
+  position: relative;
+  display: inline-flex;
   margin-top: 16px;
+}
+
+.share-btn {
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 14px;
@@ -500,6 +505,43 @@ body {
 }
 .share-btn:active { transform: scale(0.97); }
 .share-btn:hover { background: var(--accent-strong); }
+
+.share-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  min-width: 168px;
+  box-shadow: 0 14px 34px -12px rgba(0,0,0,0.7);
+  z-index: 10;
+  animation: fade-in 0.15s ease;
+}
+
+.share-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.share-menu-item:hover { background: var(--surface-raised); }
+.share-menu-item svg { color: var(--text-dim); flex-shrink: 0; }
 
 .countdown-row {
   margin-top: 22px;

@@ -333,6 +333,11 @@ const el = {
   resultsSummary: $('results-summary'),
   resultsSolution: $('results-solution'),
   btnShare: $('btn-share'),
+  shareMenu: $('share-menu'),
+  shareWhatsapp: $('share-whatsapp'),
+  shareEmail: $('share-email'),
+  shareX: $('share-x'),
+  shareCopy: $('share-copy'),
   countdown: $('countdown'),
   leaderboardList: $('leaderboard-list'),
   leaderboardOwnRank: $('leaderboard-own-rank'),
@@ -586,7 +591,7 @@ function onGiveUpClick() {
   if (game.locked) return;
   if (!confirmingGiveUp) {
     confirmingGiveUp = true;
-    el.btnGiveup.textContent = 'Tap again to confirm';
+    el.btnGiveup.textContent = 'Are you sure?';
     giveUpTimeout = setTimeout(resetGiveUpButton, 3000);
   } else {
     resetGiveUpButton();
@@ -796,19 +801,49 @@ function renderStatsModal() {
 
 // ---------- share ----------
 
-function buildShareText() {
+function buildShareParts() {
   const stars = '★'.repeat(game.stars) + '☆'.repeat(3 - game.stars);
-  return `2Dozen #${game.puzzleNumber} · ${game.difficulty}\n${stars} in ${formatTime(game.timeMs)}\n${location.origin}${location.pathname}`;
+  return {
+    text: `2Dozen #${game.puzzleNumber} · ${game.difficulty}\n${stars} in ${formatTime(game.timeMs)}`,
+    url: `${location.origin}${location.pathname}`,
+  };
 }
 
 async function onShare() {
-  const text = buildShareText();
+  const { text, url } = buildShareParts();
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: '2Dozen', text, url });
+      return;
+    } catch (err) {
+      if (err?.name === 'AbortError') return; // user backed out of the native sheet
+      // otherwise fall through to the menu below
+    }
+  }
+  openShareMenu(text, url);
+}
+
+function openShareMenu(text, url) {
+  const full = `${text}\n${url}`;
+  el.shareWhatsapp.href = `https://wa.me/?text=${encodeURIComponent(full)}`;
+  el.shareEmail.href = `mailto:?subject=${encodeURIComponent('2Dozen')}&body=${encodeURIComponent(full)}`;
+  el.shareX.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(full)}`;
+  el.shareMenu.hidden = false;
+}
+
+function closeShareMenu() {
+  el.shareMenu.hidden = true;
+}
+
+async function onShareCopy() {
+  const { text, url } = buildShareParts();
   try {
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(`${text}\n${url}`);
     toast('Copied to clipboard');
   } catch {
     toast('Could not copy. Long-press to select the text instead.');
   }
+  closeShareMenu();
 }
 
 // ---------- practice mode ----------
@@ -898,6 +933,16 @@ function wireEvents() {
   el.btnReset.addEventListener('click', onReset);
   el.btnGiveup.addEventListener('click', onGiveUpClick);
   el.btnShare.addEventListener('click', onShare);
+  el.shareCopy.addEventListener('click', onShareCopy);
+  el.shareWhatsapp.addEventListener('click', closeShareMenu);
+  el.shareEmail.addEventListener('click', closeShareMenu);
+  el.shareX.addEventListener('click', closeShareMenu);
+  document.addEventListener('click', (e) => {
+    if (!el.shareMenu.hidden && !e.target.closest('.share-wrap')) closeShareMenu();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !el.shareMenu.hidden) closeShareMenu();
+  });
   el.practiceLink.addEventListener('click', (e) => { e.preventDefault(); startPractice(); });
   el.practiceBack.addEventListener('click', (e) => { e.preventDefault(); returnToDaily(); });
   el.btnPracticeNext.addEventListener('click', startPractice);
