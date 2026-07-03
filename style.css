@@ -121,7 +121,9 @@ body {
   color: var(--text);
 }
 
-.streak-btn { color: var(--text-dim); }
+.streak-btn { color: var(--text-dim); cursor: default; }
+.streak-btn:hover, .streak-btn:focus-visible { background: none; color: var(--text-dim); }
+.streak-btn.has-streak:hover { color: var(--accent); }
 .streak-count {
   font-family: var(--font-mono);
   font-size: 13px;

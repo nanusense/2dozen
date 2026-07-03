@@ -972,7 +972,6 @@ function wireEvents() {
   el.practiceBack.addEventListener('click', (e) => { e.preventDefault(); returnToDaily(); });
   el.btnPracticeNext.addEventListener('click', startPractice);
 
-  el.btnStreak.addEventListener('click', () => { renderStatsModal(); el.modalStats.showModal(); });
   el.btnStats.addEventListener('click', () => { renderStatsModal(); el.modalStats.showModal(); });
   el.statsClose.addEventListener('click', () => el.modalStats.close());
   el.statsEditHandle.addEventListener('click', () => { el.modalStats.close(); openHandleModal(); });
