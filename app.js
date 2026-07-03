@@ -3,7 +3,7 @@
 
 import { firebaseConfig } from './firebase-config.js';
 
-const EPOCH = '2026-07-06';
+const EPOCH = '2026-07-05';
 const STORAGE_KEY = 'game_state_v1';
 const FIREBASE_SDK_VERSION = '10.13.0';
 const PROFANITY = ['fuck', 'shit', 'bitch', 'cunt', 'nigger', 'faggot', 'rape', 'cock', 'dick', 'pussy', 'nazi'];
@@ -231,9 +231,19 @@ async function retryPendingWrites(puzzleNumber) {
   }
 }
 
-// Leaderboards are only shown to players who've set a display name, so
-// nobody can see who's on the board without appearing on it themselves.
+// Leaderboards only open up once a player has finished today's puzzle
+// (solved or given up) *and* set a display name, so nobody sees who's on
+// the board without having played today, and nobody appears on it
+// without a name attached.
 function showLeaderboard(puzzleNumber, listEl, ownRankEl) {
+  const entry = state.history[puzzleNumber];
+  const completedToday = entry && (entry.status === 'solved' || entry.status === 'gaveup');
+
+  if (!completedToday) {
+    listEl.innerHTML = '<li class="leaderboard-locked"><span>Finish today\'s puzzle to see the leaderboard.</span></li>';
+    ownRankEl.textContent = '';
+    return;
+  }
   if (!state.handle) {
     listEl.innerHTML = `<li class="leaderboard-locked">
       <span>Add a name to see today's leaderboard.</span>
@@ -283,7 +293,7 @@ async function loadLeaderboard(puzzleNumber, listEl, ownRankEl) {
 
 function renderLeaderboardRows(rows, listEl) {
   if (rows.length === 0) {
-    listEl.innerHTML = '<li class="leaderboard-empty">No times yet today. Be the first.</li>';
+    listEl.innerHTML = '<li class="leaderboard-empty">Nobody\'s solved today\'s puzzle yet.</li>';
     return;
   }
   listEl.innerHTML = rows
@@ -316,6 +326,11 @@ const el = {
   btnHelp: $('btn-help'),
   practiceBanner: $('practice-banner'),
   practiceBack: $('practice-back'),
+  prelaunch: $('prelaunch'),
+  prelaunchTitle: $('prelaunch-title'),
+  prelaunchCountdown: $('prelaunch-countdown'),
+  puzzleMeta: $('puzzle-meta'),
+  timerRow: $('timer-row'),
   puzzleLabel: $('puzzle-label'),
   difficultyBadge: $('puzzle-difficulty'),
   timer: $('timer'),
@@ -682,18 +697,28 @@ function recordDailyResult({ status, stars, timeMs, resets }) {
 
 // ---------- results / countdown / leaderboard panel ----------
 
-function startCountdown(elm) {
+function startCountdownTo(targetDate, elm, onReached) {
+  let interval;
   function tick() {
-    const now = new Date();
-    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-    const diff = Math.max(0, next - now);
+    const diff = Math.max(0, targetDate - new Date());
     const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
     const m = String(Math.floor(diff / 60000) % 60).padStart(2, '0');
     const s = String(Math.floor(diff / 1000) % 60).padStart(2, '0');
     elm.textContent = `${h}:${m}:${s}`;
+    if (diff <= 0 && onReached) {
+      clearInterval(interval);
+      onReached();
+    }
   }
   tick();
-  return setInterval(tick, 1000);
+  interval = setInterval(tick, 1000);
+  return interval;
+}
+
+function startCountdown(elm) {
+  const now = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  return startCountdownTo(next, elm);
 }
 
 function showResults({ status, stars, timeMs }) {
@@ -1019,6 +1044,27 @@ function wireEvents() {
   });
 }
 
+// Before launch day, there's no daily puzzle to show yet: block play
+// entirely rather than exposing a negative, meaningless puzzle number.
+function showPrelaunch() {
+  el.btnStreak.hidden = true;
+  el.btnLeaderboard.hidden = true;
+  el.btnStats.hidden = true;
+  el.puzzleMeta.hidden = true;
+  el.timerRow.hidden = true;
+  el.hint.hidden = true;
+  el.board.hidden = true;
+  el.controls.hidden = true;
+  el.prelaunch.hidden = false;
+
+  const launchDate = localMidnight(new Date(`${EPOCH}T00:00:00`));
+  el.prelaunchTitle.textContent = `2Dozen launches ${launchDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}`;
+  startCountdownTo(launchDate, el.prelaunchCountdown, () => location.reload());
+
+  el.btnHelp.addEventListener('click', () => el.modalHelp.showModal());
+  el.helpClose.addEventListener('click', () => el.modalHelp.close());
+}
+
 async function boot() {
   state = loadState();
   renderHeaderStreak();
@@ -1026,6 +1072,11 @@ async function boot() {
   puzzles = await fetch('puzzles.json').then((r) => r.json());
 
   const dse = daysSinceEpoch();
+  if (dse < 0) {
+    showPrelaunch();
+    return;
+  }
+
   const puzzleNumber = dse + 1;
   const contentIndex = ((dse % puzzles.length) + puzzles.length) % puzzles.length;
   dailyContext = { puzzleNumber, puzzleData: puzzles[contentIndex] };

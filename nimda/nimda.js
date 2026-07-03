@@ -9,7 +9,7 @@ import { firebaseConfig } from '../firebase-config.js';
 
 const PASSWORD = '090621';
 const UNLOCK_KEY = 'nimda_unlocked';
-const EPOCH = '2026-07-06';
+const EPOCH = '2026-07-05';
 const FIREBASE_SDK_VERSION = '10.13.0';
 const QUERY_LIMIT = 1000;
 

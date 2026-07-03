@@ -37,7 +37,7 @@ clock, see Security rules below).
 
 ## How the daily puzzle is chosen
 
-- Launch day `2026-07-06` is puzzle #1 (`EPOCH` in `app.js` / `generate-puzzles.js`).
+- Launch day `2026-07-05` is puzzle #1 (`EPOCH` in `app.js` / `generate-puzzles.js`).
 - Each player's `daysSinceEpoch` is computed from *their own local calendar date*,
   never UTC, so the puzzle rolls over at each player's own midnight.
 - `puzzleContentIndex = daysSinceEpoch % puzzles.length` picks which entry of
