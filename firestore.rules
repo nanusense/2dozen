@@ -30,12 +30,12 @@ service cloud.firestore {
         && data.created_at == request.time;
     }
 
-    // Launch day (2026-07-05T00:00:00Z) is puzzle #1. Each player's puzzle
+    // Launch day (2026-07-03T00:00:00Z) is puzzle #1. Each player's puzzle
     // number is derived from *their* local date, so at any instant, clients
     // across the UTC-12..UTC+14 spread can plausibly be up to one day ahead
     // or behind the UTC-derived value.
     function isPlausiblePuzzleNumber(n) {
-      let utcDaysSinceEpoch = math.floor((request.time.toMillis() - 1783209600000) / 86400000);
+      let utcDaysSinceEpoch = math.floor((request.time.toMillis() - 1783036800000) / 86400000);
       let expected = utcDaysSinceEpoch + 1;
       return n >= expected - 1 && n <= expected + 1;
     }

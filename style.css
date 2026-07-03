@@ -168,49 +168,6 @@ body {
   font-weight: 600;
 }
 
-.prelaunch {
-  width: 100%;
-  margin-top: 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 14px;
-}
-
-.prelaunch-badge {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--accent-ink);
-  background: var(--accent);
-  padding: 4px 12px;
-  border-radius: 999px;
-}
-
-.prelaunch-title {
-  font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  font-size: 26px;
-  color: var(--text);
-  margin: 0;
-}
-
-.prelaunch-sub {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text-dim);
-  max-width: 320px;
-  margin: 0;
-}
-
-.prelaunch .countdown-row {
-  margin-top: 10px;
-}
-
 .results-solution {
   font-family: var(--font-mono);
   font-size: 15px;

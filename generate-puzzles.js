@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const EPOCH = '2026-07-05';
+const EPOCH = '2026-07-03';
 const SEED = 20260706;
 
 // ---------- exact rational arithmetic ----------

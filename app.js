@@ -3,7 +3,7 @@
 
 import { firebaseConfig } from './firebase-config.js';
 
-const EPOCH = '2026-07-05';
+const EPOCH = '2026-07-03';
 const STORAGE_KEY = 'game_state_v1';
 const FIREBASE_SDK_VERSION = '10.13.0';
 const PROFANITY = ['fuck', 'shit', 'bitch', 'cunt', 'nigger', 'faggot', 'rape', 'cock', 'dick', 'pussy', 'nazi'];
@@ -326,11 +326,6 @@ const el = {
   btnHelp: $('btn-help'),
   practiceBanner: $('practice-banner'),
   practiceBack: $('practice-back'),
-  prelaunch: $('prelaunch'),
-  prelaunchTitle: $('prelaunch-title'),
-  prelaunchCountdown: $('prelaunch-countdown'),
-  puzzleMeta: $('puzzle-meta'),
-  timerRow: $('timer-row'),
   puzzleLabel: $('puzzle-label'),
   difficultyBadge: $('puzzle-difficulty'),
   timer: $('timer'),
@@ -1043,27 +1038,6 @@ function wireEvents() {
   });
 }
 
-// Before launch day, there's no daily puzzle to show yet: block play
-// entirely rather than exposing a negative, meaningless puzzle number.
-function showPrelaunch() {
-  el.btnStreak.hidden = true;
-  el.btnLeaderboard.hidden = true;
-  el.btnStats.hidden = true;
-  el.puzzleMeta.hidden = true;
-  el.timerRow.hidden = true;
-  el.hint.hidden = true;
-  el.board.hidden = true;
-  el.controls.hidden = true;
-  el.prelaunch.hidden = false;
-
-  const launchDate = localMidnight(new Date(`${EPOCH}T00:00:00`));
-  el.prelaunchTitle.textContent = `2Dozen launches ${launchDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}`;
-  startCountdownTo(launchDate, el.prelaunchCountdown, () => location.reload());
-
-  el.btnHelp.addEventListener('click', () => el.modalHelp.showModal());
-  el.helpClose.addEventListener('click', () => el.modalHelp.close());
-}
-
 async function boot() {
   state = loadState();
   renderHeaderStreak();
@@ -1071,11 +1045,6 @@ async function boot() {
   puzzles = await fetch('puzzles.json').then((r) => r.json());
 
   const dse = daysSinceEpoch();
-  if (dse < 0) {
-    showPrelaunch();
-    return;
-  }
-
   const puzzleNumber = dse + 1;
   const contentIndex = ((dse % puzzles.length) + puzzles.length) % puzzles.length;
   dailyContext = { puzzleNumber, puzzleData: puzzles[contentIndex] };
