@@ -43,6 +43,22 @@
     </div>
 
     <section class="admin-section">
+      <h2>Puzzle lookup</h2>
+      <form id="lookup-form" class="lookup-form">
+        <input id="lookup-input" type="number" step="1" inputmode="numeric" class="handle-input lookup-input" placeholder="Puzzle number, e.g. 3" aria-label="Puzzle number">
+        <button type="submit" class="action-btn action-btn-primary">View</button>
+      </form>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Rank</th><th>Name</th><th>Time</th><th>Stars</th><th>When</th></tr>
+          </thead>
+          <tbody id="lookup-body"><tr class="admin-table-empty"><td colspan="5">Enter a puzzle number above.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-section">
       <h2>Stars</h2>
       <div id="chart-stars" class="bar-chart"></div>
     </section>

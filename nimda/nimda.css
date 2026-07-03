@@ -105,6 +105,18 @@ body { padding-bottom: 64px; }
   color: var(--text);
 }
 
+.lookup-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.lookup-input {
+  flex: 1;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
 .bar-chart {
   display: flex;
   flex-direction: column;

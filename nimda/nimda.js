@@ -30,6 +30,9 @@ const el = {
   chartPuzzles: $('chart-puzzles'),
   activityBody: $('activity-body'),
   dataNote: $('data-note'),
+  lookupForm: $('lookup-form'),
+  lookupInput: $('lookup-input'),
+  lookupBody: $('lookup-body'),
 };
 
 function formatTime(ms) {
@@ -91,6 +94,22 @@ el.btnLock.addEventListener('click', () => {
 
 // ---------- data + rendering ----------
 
+let firestoreApiPromise = null;
+async function getFirestoreApi() {
+  if (!firestoreApiPromise) {
+    firestoreApiPromise = (async () => {
+      const [{ initializeApp }, fs] = await Promise.all([
+        import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`),
+        import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`),
+      ]);
+      const app = initializeApp(firebaseConfig);
+      const db = fs.getFirestore(app);
+      return { db, ...fs };
+    })();
+  }
+  return firestoreApiPromise;
+}
+
 function renderBarChart(container, rows, { horizontal = false } = {}) {
   if (rows.length === 0) {
     container.innerHTML = '<div class="bar-chart-empty">No data yet.</div>';
@@ -111,13 +130,11 @@ function renderBarChart(container, rows, { horizontal = false } = {}) {
 async function loadDashboard() {
   el.dataNote.textContent = 'Loading…';
   try {
-    const [{ initializeApp }, fs, puzzles] = await Promise.all([
-      import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`),
-      import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`),
+    const [fs, puzzles] = await Promise.all([
+      getFirestoreApi(),
       fetch('../puzzles.json').then((r) => r.json()),
     ]);
-    const app = initializeApp(firebaseConfig);
-    const db = fs.getFirestore(app);
+    const { db } = fs;
 
     const q = fs.query(fs.collection(db, 'scores'), fs.orderBy('created_at', 'desc'), fs.limit(QUERY_LIMIT));
     const snap = await fs.getDocs(q);
@@ -186,19 +203,60 @@ function renderActivity(rows) {
     return;
   }
   el.activityBody.innerHTML = recent
-    .map((r) => {
-      const when = r.created_at?.seconds
-        ? new Date(r.created_at.seconds * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : '—';
-      return `<tr>
-        <td>${when}</td>
+    .map(
+      (r) => `<tr>
+        <td>${formatWhen(r.created_at)}</td>
         <td>#${r.puzzle_number}</td>
         <td class="name-cell">${escapeHtml(r.handle)}</td>
         <td>${formatTime(r.time_ms)}</td>
         <td class="stars-cell">${'★'.repeat(r.stars)}</td>
-      </tr>`;
-    })
+      </tr>`
+    )
     .join('');
 }
+
+// ---------- puzzle lookup ----------
+
+function formatWhen(timestamp) {
+  return timestamp?.seconds
+    ? new Date(timestamp.seconds * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : '—';
+}
+
+async function runLookup(e) {
+  e.preventDefault();
+  const raw = el.lookupInput.value.trim();
+  if (raw === '') return;
+  const puzzleNumber = parseInt(raw, 10);
+  if (Number.isNaN(puzzleNumber)) return;
+
+  el.lookupBody.innerHTML = '<tr class="admin-table-empty"><td colspan="5">Loading&hellip;</td></tr>';
+  try {
+    const { db, collection, query, where, orderBy, getDocs } = await getFirestoreApi();
+    const q = query(collection(db, 'scores'), where('puzzle_number', '==', puzzleNumber), orderBy('time_ms', 'asc'));
+    const snap = await getDocs(q);
+    const rows = snap.docs.map((d) => d.data());
+
+    if (rows.length === 0) {
+      el.lookupBody.innerHTML = `<tr class="admin-table-empty"><td colspan="5">No solves for puzzle #${puzzleNumber}.</td></tr>`;
+      return;
+    }
+    el.lookupBody.innerHTML = rows
+      .map(
+        (r, i) => `<tr>
+        <td>${i + 1}</td>
+        <td class="name-cell">${escapeHtml(r.handle)}</td>
+        <td>${formatTime(r.time_ms)}</td>
+        <td class="stars-cell">${'★'.repeat(r.stars)}</td>
+        <td>${formatWhen(r.created_at)}</td>
+      </tr>`
+      )
+      .join('');
+  } catch (err) {
+    el.lookupBody.innerHTML = `<tr class="admin-table-empty"><td colspan="5">Couldn't load: ${escapeHtml(err?.message || err)}</td></tr>`;
+  }
+}
+
+el.lookupForm.addEventListener('submit', runLookup);
 
 checkUnlocked();
