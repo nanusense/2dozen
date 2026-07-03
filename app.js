@@ -268,7 +268,7 @@ async function loadLeaderboard(puzzleNumber, listEl, ownRankEl) {
       collection(db, 'scores'),
       where('puzzle_number', '==', puzzleNumber),
       orderBy('time_ms', 'asc'),
-      limit(25)
+      limit(10)
     );
     const snap = await getDocs(q);
     const rows = snap.docs.map((d) => d.data());
