@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "scores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "puzzle_number", "order": "ASCENDING" },
+        { "fieldPath": "time_ms", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

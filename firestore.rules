@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// 2Dozen daily leaderboard rules.
+//
+// One document per player per puzzle, keyed by "${puzzle_number}_${player_id}".
+// Writes are create-only: a second attempt at the same doc ID is an "update"
+// from the rules engine's point of view and is rejected below, which is what
+// enforces one-submission-per-player-per-puzzle without any server code.
+//
+// These checks stop casual abuse (obviously fake times, malformed docs,
+// resubmission). They cannot stop a determined client from lying about its
+// own time_ms — there is no server authoritative source of truth for a
+// client-only game. Treat the leaderboard as social, not competitive
+// infrastructure.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidScore(data) {
+      return data.keys().hasOnly(['puzzle_number', 'player_id', 'handle', 'time_ms', 'stars', 'created_at'])
+        && data.keys().hasAll(['puzzle_number', 'player_id', 'handle', 'time_ms', 'stars', 'created_at'])
+        && data.puzzle_number is int
+        && data.player_id is string
+        && data.handle is string
+        && data.handle.matches('^[A-Za-z0-9]{3,12}$')
+        && data.time_ms is int
+        && data.time_ms >= 3000
+        && data.stars is int
+        && data.stars >= 0 && data.stars <= 3
+        && data.created_at == request.time;
+    }
+
+    // Launch day (2026-07-06T00:00:00Z) is puzzle #1. Each player's puzzle
+    // number is derived from *their* local date, so at any instant, clients
+    // across the UTC-12..UTC+14 spread can plausibly be up to one day ahead
+    // or behind the UTC-derived value.
+    function isPlausiblePuzzleNumber(n) {
+      let utcDaysSinceEpoch = math.floor((request.time.toMillis() - 1783296000000) / 86400000);
+      let expected = utcDaysSinceEpoch + 1;
+      return n >= expected - 1 && n <= expected + 1;
+    }
+
+    match /scores/{scoreId} {
+      allow read: if true;
+
+      allow create: if
+        isValidScore(request.resource.data) &&
+        isPlausiblePuzzleNumber(request.resource.data.puzzle_number) &&
+        scoreId == string(request.resource.data.puzzle_number) + '_' + request.resource.data.player_id;
+
+      allow update, delete: if false;
+    }
+  }
+}

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2Dozen. Make 24, once a day.</title>
+<meta name="description" content="A daily arithmetic puzzle. Combine four numbers to make exactly 24.">
+<meta name="theme-color" content="#151310">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23151310'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='54' font-weight='700' fill='%23e0a758' text-anchor='middle'%3E24%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<div id="storage-notice" class="storage-notice" hidden>
+  Private browsing detected. You can still play, but streaks and stats won't be saved on this device.
+</div>
+
+<header class="app-header">
+  <div class="wordmark">2<span class="wordmark-dozen">Dozen</span></div>
+  <nav class="header-icons" aria-label="Menu">
+    <button id="btn-streak" class="icon-btn streak-btn" title="Streak" aria-label="Streak">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3-2 4-2 7a4 4 0 1 0 8 0c0-1-.5-2-1-2 .5 2-.5 3-1.5 3 1-2-1-3-1-5.5C14.5 3 13 2 12 2Z"/><path d="M8 14a4 4 0 0 0 8 0c0-2-1-3-1-3s0 2-2 2-1.5-1.5-1.5-3c-1.5 1-3.5 2.5-3.5 4Z"/></svg>
+      <span id="streak-count" class="streak-count">0</span>
+    </button>
+    <button id="btn-leaderboard" class="icon-btn" title="Leaderboard" aria-label="Leaderboard">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a1 1 0 0 0-1 1c0 2.5 1.8 4.3 4 4.7M17 6h3a1 1 0 0 1 1 1c0 2.5-1.8 4.3-4 4.7"/></svg>
+    </button>
+    <button id="btn-stats" class="icon-btn" title="Stats" aria-label="Stats">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+    </button>
+    <button id="btn-help" class="icon-btn" title="How to play" aria-label="How to play">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.8"/><circle cx="12" cy="17" r=".6" fill="currentColor" stroke="none"/></svg>
+    </button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <div id="practice-banner" class="practice-banner" hidden>
+    Practice mode. Doesn't affect your streak, stats, or the leaderboard.
+    <a id="practice-back" href="#">Back to daily</a>
+  </div>
+
+  <div class="puzzle-meta">
+    <span id="puzzle-label" class="puzzle-label">Puzzle #&mdash;</span>
+    <span id="puzzle-difficulty" class="difficulty-badge">&mdash;</span>
+  </div>
+
+  <div class="timer-row">
+    <span id="timer" class="timer">0:00</span>
+    <span id="practice-badge" class="practice-badge" hidden>Practice</span>
+  </div>
+
+  <section id="board" class="board" aria-label="Puzzle tiles">
+    <div id="tiles" class="tiles"></div>
+  </section>
+
+  <section class="controls">
+    <div id="operators" class="operators" aria-label="Operators">
+      <button class="op-btn" data-op="+" aria-label="Add">+</button>
+      <button class="op-btn" data-op="-" aria-label="Subtract">&minus;</button>
+      <button class="op-btn" data-op="*" aria-label="Multiply">&times;</button>
+      <button class="op-btn" data-op="/" aria-label="Divide">&divide;</button>
+    </div>
+
+    <div class="action-row">
+      <button id="btn-undo" class="action-btn" disabled>Undo</button>
+      <button id="btn-reset" class="action-btn">Reset</button>
+      <button id="btn-giveup" class="action-btn action-btn-quiet">Give up</button>
+    </div>
+  </section>
+
+  <section id="results" class="results" hidden>
+    <div id="results-stars" class="results-stars">&#9733;&#9733;&#9733;</div>
+    <div id="results-summary" class="results-summary">Solved in 0:00</div>
+    <div id="results-solution" class="results-solution" hidden></div>
+    <button id="btn-share" class="share-btn">Share result</button>
+
+    <div class="countdown-row">
+      <span>Next puzzle in</span>
+      <span id="countdown" class="countdown">--:--:--</span>
+    </div>
+
+    <div class="leaderboard-inline">
+      <h3>Today's leaderboard</h3>
+      <ol id="leaderboard-list" class="leaderboard-list"><li class="leaderboard-loading">Loading&hellip;</li></ol>
+      <div id="leaderboard-own-rank" class="leaderboard-own-rank"></div>
+    </div>
+
+    <a id="practice-link" class="practice-link" href="#">Play practice mode &rarr;</a>
+  </section>
+
+  <section id="practice-results" class="results" hidden>
+    <div id="practice-results-summary" class="results-summary">Solved</div>
+    <div id="practice-results-solution" class="results-solution" hidden></div>
+    <button id="btn-practice-next" class="share-btn">Next practice puzzle</button>
+  </section>
+
+</main>
+
+<!-- Handle entry modal -->
+<dialog id="modal-handle" class="modal">
+  <form method="dialog" class="modal-content">
+    <h2>Pick a display handle</h2>
+    <p class="modal-sub">3 to 12 letters or numbers. Shown on the daily leaderboard. You can change this later in settings.</p>
+    <input id="handle-input" class="handle-input" maxlength="12" autocomplete="off" placeholder="e.g. FOXTROT9">
+    <p id="handle-error" class="handle-error" hidden></p>
+    <div class="modal-actions">
+      <button type="button" id="handle-skip" class="action-btn action-btn-quiet">Skip for now</button>
+      <button type="submit" id="handle-submit" class="action-btn action-btn-primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Stats modal -->
+<dialog id="modal-stats" class="modal">
+  <div class="modal-content">
+    <h2>Your stats</h2>
+    <div class="stats-grid">
+      <div class="stat"><span id="stat-played" class="stat-num">0</span><span class="stat-label">Solved</span></div>
+      <div class="stat"><span id="stat-current-streak" class="stat-num">0</span><span class="stat-label">Current streak</span></div>
+      <div class="stat"><span id="stat-max-streak" class="stat-num">0</span><span class="stat-label">Max streak</span></div>
+    </div>
+    <div class="star-histogram" id="star-histogram"></div>
+    <div class="modal-actions modal-actions-end">
+      <button type="button" id="stats-edit-handle" class="action-btn action-btn-quiet">Edit handle</button>
+      <button type="button" id="stats-close" class="action-btn action-btn-primary">Close</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Leaderboard modal (available anytime post-solve day) -->
+<dialog id="modal-leaderboard" class="modal">
+  <div class="modal-content">
+    <h2>Today's leaderboard</h2>
+    <ol id="leaderboard-list-modal" class="leaderboard-list"></ol>
+    <div id="leaderboard-own-rank-modal" class="leaderboard-own-rank"></div>
+    <div class="modal-actions modal-actions-end">
+      <button type="button" id="leaderboard-close" class="action-btn action-btn-primary">Close</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- How to play modal -->
+<dialog id="modal-help" class="modal">
+  <div class="modal-content">
+    <h2>How to play</h2>
+    <p>Every day, everyone gets the same four numbers. Combine all four, using each exactly once, to make exactly 24.</p>
+    <p>Tap a number, tap an operator, tap a second number. They merge into one tile. Keep going until one tile remains. If it reads 24, you've solved it.</p>
+    <div class="example-box">
+      <div class="example-label">Example: 4, 7, 8, 8</div>
+      <div class="example-steps">
+        <div>7 &minus; 8 &divide; 8 = 6</div>
+        <div>6 &times; 4 = 24</div>
+      </div>
+    </div>
+    <p class="modal-sub">Fractions along the way are shown exactly, never rounded. Undo steps back one merge, Reset starts the puzzle over.</p>
+    <div class="modal-actions modal-actions-end">
+      <button type="button" id="help-close" class="action-btn action-btn-primary">Got it</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Settings (handle edit) modal reuses modal-handle -->
+
+<div id="toast" class="toast" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

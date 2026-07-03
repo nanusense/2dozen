@@ -1,0 +1,8 @@
+{
+  "name": "2dozen",
+  "private": true,
+  "description": "Daily arithmetic puzzle, make 24 from four numbers.",
+  "scripts": {
+    "generate": "node generate-puzzles.js"
+  }
+}
