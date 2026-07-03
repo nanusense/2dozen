@@ -1,27 +1,27 @@
-/* 2Dozen — dark, confident, no gradients. Serif wordmark, mono numerals, sans UI. */
+/* 2Dozen — dark, confident, no gradients. Geometric grotesk wordmark, mono numerals. */
 
 :root {
-  --bg: #151310;
-  --bg-alt: #1b1814;
-  --surface: #221e18;
-  --surface-raised: #2a251d;
-  --border: #37311f;
-  --border-soft: #2c2720;
-  --text: #f2ece0;
-  --text-dim: #b3aa96;
-  --text-faint: #786e5c;
-  --accent: #e0a758;
-  --accent-strong: #f0bd76;
-  --accent-ink: #241a0c;
-  --good: #8fae6f;
-  --bad: #c96f5c;
+  --bg: #0a0b0d;
+  --bg-alt: #0e1012;
+  --surface: #16181b;
+  --surface-raised: #1e2124;
+  --border: #2a2d31;
+  --border-soft: #202226;
+  --text: #f5f6f7;
+  --text-dim: #9298a0;
+  --text-faint: #5c6167;
+  --accent: #c6ff5e;
+  --accent-strong: #d8ff8a;
+  --accent-ink: #0f1a04;
+  --good: #6ee787;
+  --bad: #ff6b5e;
 
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
-  --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
+  --font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
 
-  --radius: 14px;
-  --radius-sm: 9px;
+  --radius: 18px;
+  --radius-sm: 11px;
   --tile-size: 78px;
 
   color-scheme: dark;
@@ -85,16 +85,15 @@ body {
 
 .wordmark {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 26px;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -0.03em;
   color: var(--text);
+  font-optical-sizing: auto;
 }
 
-.wordmark-dozen {
+.wordmark-num {
   color: var(--accent);
-  font-style: italic;
-  font-weight: 500;
 }
 
 .header-icons {
@@ -247,8 +246,29 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 12px 14px;
   perspective: 600px;
+}
+
+.tile-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--tile-size);
+}
+
+.tile-derivation {
+  margin-top: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-faint);
+  text-align: center;
+  line-height: 1.35;
+  min-height: 1.35em;
+  max-width: 108px;
+  overflow-wrap: break-word;
 }
 
 .tile {
@@ -486,7 +506,8 @@ body {
 
 .leaderboard-inline h3 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   font-size: 17px;
   margin: 0 0 10px;
   color: var(--text);
@@ -587,7 +608,8 @@ body {
 
 .modal-content h2 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   font-size: 22px;
   margin: 0 0 12px;
 }

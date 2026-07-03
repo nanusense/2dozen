@@ -32,11 +32,34 @@ class Fraction {
   equalsInt(k) { return this.d === 1 && this.n === k; }
 }
 
-function applyOp(a, b, op) {
-  if (op === '+') return a.add(b);
-  if (op === '-') return a.sub(b);
-  if (op === '*') return a.mul(b);
-  return a.div(b); // may be null on divide-by-zero
+// Every tile remembers the expression that produced it (leaves are just
+// their own number), so the board can show *how* a result was derived, not
+// just the number. Merge order is the only way to express parenthesization
+// in this UI, so this doubles as the visible proof of what got grouped.
+const PRECEDENCE = { '+': 1, '-': 1, '*': 2, '/': 2 };
+const OPSYM = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+
+function wrapExpr(tile, parentPrec, isRightChild, parentOp) {
+  if (tile.isLeaf) return tile.expr;
+  const needParens =
+    tile.opPrec < parentPrec ||
+    (tile.opPrec === parentPrec && isRightChild && (parentOp === '-' || parentOp === '/'));
+  return needParens ? `(${tile.expr})` : tile.expr;
+}
+
+function combine(a, b, op) {
+  let value;
+  if (op === '+') value = a.value.add(b.value);
+  else if (op === '-') value = a.value.sub(b.value);
+  else if (op === '*') value = a.value.mul(b.value);
+  else {
+    value = a.value.div(b.value);
+    if (value === null) return null;
+  }
+  const opPrec = PRECEDENCE[op];
+  const leftStr = wrapExpr(a, opPrec, false, op);
+  const rightStr = wrapExpr(b, opPrec, true, op);
+  return { value, expr: `${leftStr} ${OPSYM[op]} ${rightStr}`, isLeaf: false, opPrec };
 }
 
 function formatFraction(f) {
@@ -348,6 +371,9 @@ function render() {
 function renderTiles() {
   el.tiles.innerHTML = '';
   for (const tile of game.tiles) {
+    const wrap = document.createElement('div');
+    wrap.className = 'tile-wrap';
+
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tile';
@@ -365,7 +391,14 @@ function renderTiles() {
       tile.justFormed = false;
     }
     btn.addEventListener('click', () => onTileTap(tile.id, false));
-    el.tiles.appendChild(btn);
+    wrap.appendChild(btn);
+
+    const derivation = document.createElement('div');
+    derivation.className = 'tile-derivation';
+    if (!tile.isLeaf) derivation.textContent = tile.expr;
+    wrap.appendChild(derivation);
+
+    el.tiles.appendChild(wrap);
   }
 }
 
@@ -442,9 +475,9 @@ function commitMerge() {
   const idxB = game.tiles.findIndex((t) => t.id === second);
   const a = game.tiles[idxA];
   const b = game.tiles[idxB];
-  const result = applyOp(a.value, b.value, op);
+  const merged = combine(a, b, op);
 
-  if (result === null) {
+  if (merged === null) {
     shakeTileEl(second);
     selection.second = null;
     return;
@@ -455,7 +488,7 @@ function commitMerge() {
 
   const rest = game.tiles.filter((_, i) => i !== idxA && i !== idxB);
   const insertAt = Math.min(idxA, idxB);
-  const newTile = { id: nextTileId++, value: result, justFormed: true };
+  const newTile = { id: nextTileId++, ...merged, justFormed: true };
   game.tiles = [...rest.slice(0, insertAt), newTile, ...rest.slice(insertAt)];
 
   selection = { first: null, op: null, second: null };
@@ -722,7 +755,7 @@ function initGame(opts) {
   if (game?.countdownInterval) clearInterval(game.countdownInterval);
   resetGiveUpButton();
 
-  const originalTiles = opts.numbers.map((n) => ({ id: nextTileId++, value: new Fraction(n) }));
+  const originalTiles = opts.numbers.map((n) => ({ id: nextTileId++, value: new Fraction(n), expr: `${n}`, isLeaf: true }));
   game = {
     mode: opts.mode,
     puzzleNumber: opts.puzzleNumber ?? null,
