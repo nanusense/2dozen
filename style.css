@@ -558,6 +558,31 @@ body {
   justify-content: center;
 }
 
+.leaderboard-locked {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 14px;
+  text-align: center;
+}
+.leaderboard-locked span {
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+.leaderboard-cta-btn {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  cursor: pointer;
+}
+.leaderboard-cta-btn:hover { background: var(--accent-strong); }
+
 .lb-rank {
   font-family: var(--font-mono);
   color: var(--text-faint);
@@ -679,13 +704,12 @@ body {
   width: 100%;
   font-family: var(--font-mono);
   font-size: 18px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  text-transform: uppercase;
 }
 .handle-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 

@@ -22,7 +22,7 @@ service cloud.firestore {
         && data.puzzle_number is int
         && data.player_id is string
         && data.handle is string
-        && data.handle.matches('^[A-Za-z0-9]{3,12}$')
+        && data.handle.matches("^[A-Za-z0-9 '-]{1,16}$")
         && data.time_ms is int
         && data.time_ms >= 3000
         && data.stars is int

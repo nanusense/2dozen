@@ -231,6 +231,20 @@ async function retryPendingWrites(puzzleNumber) {
   }
 }
 
+// Leaderboards are only shown to players who've set a display name, so
+// nobody can see who's on the board without appearing on it themselves.
+function showLeaderboard(puzzleNumber, listEl, ownRankEl) {
+  if (!state.handle) {
+    listEl.innerHTML = `<li class="leaderboard-locked">
+      <span>Add a name to see today's leaderboard.</span>
+      <button type="button" class="leaderboard-cta-btn" data-open-handle-modal>Add name</button>
+    </li>`;
+    ownRankEl.textContent = '';
+    return;
+  }
+  loadLeaderboard(puzzleNumber, listEl, ownRankEl);
+}
+
 async function loadLeaderboard(puzzleNumber, listEl, ownRankEl) {
   listEl.innerHTML = '<li class="leaderboard-loading">Loading&hellip;</li>';
   ownRankEl.textContent = '';
@@ -625,7 +639,7 @@ async function onSolved() {
   showResults({ status: 'solved', stars, timeMs: game.timeMs });
 
   if (state.handle) {
-    submitScore(game.puzzleNumber, game.timeMs, stars).then(refreshResultsLeaderboard);
+    submitScore(game.puzzleNumber, game.timeMs, stars).then(refreshVisibleLeaderboards);
     renderStatsModal();
     el.modalStats.showModal();
   } else {
@@ -699,13 +713,26 @@ function showResults({ status, stars, timeMs }) {
   if (game.countdownInterval) clearInterval(game.countdownInterval);
   game.countdownInterval = startCountdown(el.countdown);
 
-  loadLeaderboard(game.puzzleNumber, el.leaderboardList, el.leaderboardOwnRank);
+  showLeaderboard(game.puzzleNumber, el.leaderboardList, el.leaderboardOwnRank);
 }
 
-function refreshResultsLeaderboard() {
+function refreshVisibleLeaderboards() {
   if (game.mode === 'daily' && !el.results.hidden) {
-    loadLeaderboard(game.puzzleNumber, el.leaderboardList, el.leaderboardOwnRank);
+    showLeaderboard(game.puzzleNumber, el.leaderboardList, el.leaderboardOwnRank);
   }
+  if (el.modalLeaderboard.open) {
+    showLeaderboard(dailyContext.puzzleNumber, el.leaderboardListModal, el.leaderboardOwnRankModal);
+  }
+}
+
+// Reached from the "Add name" CTA shown in place of a locked leaderboard.
+// If today's puzzle is already solved, saving a name here also submits it.
+function promptAddName() {
+  const entry = state.history[dailyContext?.puzzleNumber];
+  if (entry && entry.status === 'solved' && !state.handle) {
+    pendingHandleSubmission = { puzzleNumber: dailyContext.puzzleNumber, timeMs: entry.timeMs, stars: entry.stars };
+  }
+  openHandleModal();
 }
 
 function showPracticeResults() {
@@ -729,10 +756,14 @@ function showPracticeSolution() {
 
 // ---------- handle / leaderboard submission flow ----------
 
+// Kept in sync with the handle regex in firestore.rules.
+const HANDLE_REGEX = /^[A-Za-z0-9 '-]{1,16}$/;
+
 function validateHandle(v) {
-  if (!/^[A-Za-z0-9]{3,12}$/.test(v)) return 'Use 3 to 12 letters or numbers.';
+  if (v.length === 0) return 'Enter a name.';
+  if (!HANDLE_REGEX.test(v)) return 'Up to 16 characters: letters, numbers, spaces, apostrophes, hyphens.';
   const lower = v.toLowerCase();
-  if (PROFANITY.some((w) => lower.includes(w))) return 'Please choose a different handle.';
+  if (PROFANITY.some((w) => lower.includes(w))) return 'Please choose a different name.';
   return null;
 }
 
@@ -881,13 +912,13 @@ function wireEvents() {
 
   el.btnLeaderboard.addEventListener('click', () => {
     el.modalLeaderboard.showModal();
-    loadLeaderboard(dailyContext.puzzleNumber, el.leaderboardListModal, el.leaderboardOwnRankModal);
+    showLeaderboard(dailyContext.puzzleNumber, el.leaderboardListModal, el.leaderboardOwnRankModal);
   });
   el.leaderboardClose.addEventListener('click', () => el.modalLeaderboard.close());
 
   el.modalHandle.addEventListener('submit', (e) => {
     e.preventDefault();
-    const val = el.handleInput.value.trim().toUpperCase();
+    const val = el.handleInput.value.trim();
     const err = validateHandle(val);
     if (err) {
       el.handleError.textContent = err;
@@ -898,13 +929,21 @@ function wireEvents() {
     saveState();
     el.modalHandle.close();
     if (pendingHandleSubmission) {
-      submitScore(pendingHandleSubmission.puzzleNumber, pendingHandleSubmission.timeMs, pendingHandleSubmission.stars).then(refreshResultsLeaderboard);
+      submitScore(pendingHandleSubmission.puzzleNumber, pendingHandleSubmission.timeMs, pendingHandleSubmission.stars).then(refreshVisibleLeaderboards);
       pendingHandleSubmission = null;
+    } else {
+      refreshVisibleLeaderboards();
     }
   });
   el.handleSkip.addEventListener('click', () => {
     el.modalHandle.close();
     pendingHandleSubmission = null;
+  });
+  el.leaderboardList.addEventListener('click', (e) => {
+    if (e.target.closest('[data-open-handle-modal]')) promptAddName();
+  });
+  el.leaderboardListModal.addEventListener('click', (e) => {
+    if (e.target.closest('[data-open-handle-modal]')) promptAddName();
   });
   el.modalHandle.addEventListener('close', () => {
     if (showStatsAfterHandleClose) {

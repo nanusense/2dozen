@@ -120,7 +120,7 @@ other project, since it's the only place this app touches a server.
 (never `update` or `delete`), on documents that:
 
 - have exactly the five expected fields with the right types,
-- have a `handle` matching `^[A-Za-z0-9]{3,12}$`,
+- have a `handle` matching `^[A-Za-z0-9 '-]{1,16}$`,
 - have `time_ms >= 3000` (nobody solves in under 3 seconds),
 - have `created_at == request.time` (server-stamped, not client-supplied),
 - have a `puzzle_number` within one day of what the server's clock expects

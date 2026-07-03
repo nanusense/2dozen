@@ -108,9 +108,9 @@
 <!-- Handle entry modal -->
 <dialog id="modal-handle" class="modal">
   <form method="dialog" class="modal-content">
-    <h2>Pick a display handle</h2>
-    <p class="modal-sub">3 to 12 letters or numbers. Shown on the daily leaderboard. You can change this later in settings.</p>
-    <input id="handle-input" class="handle-input" maxlength="12" autocomplete="off" placeholder="e.g. FOXTROT9">
+    <h2>Pick a name</h2>
+    <p class="modal-sub">Shown on the daily leaderboard. Unlocks the leaderboard for you too. You can change this later in settings.</p>
+    <input id="handle-input" class="handle-input" maxlength="16" autocomplete="off" placeholder="e.g. Alex">
     <p id="handle-error" class="handle-error" hidden></p>
     <div class="modal-actions">
       <button type="button" id="handle-skip" class="action-btn action-btn-quiet">Skip for now</button>
@@ -130,7 +130,7 @@
     </div>
     <div class="star-histogram" id="star-histogram"></div>
     <div class="modal-actions modal-actions-end">
-      <button type="button" id="stats-edit-handle" class="action-btn action-btn-quiet">Edit handle</button>
+      <button type="button" id="stats-edit-handle" class="action-btn action-btn-quiet">Edit name</button>
       <button type="button" id="stats-close" class="action-btn action-btn-primary">Close</button>
     </div>
   </div>
