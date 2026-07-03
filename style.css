@@ -231,6 +231,25 @@ body {
   border-radius: 999px;
 }
 
+.hint {
+  margin-top: 14px;
+  min-height: 20px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.hint .hint-op {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.hint.hint-stuck {
+  color: var(--bad);
+}
+
 /* ---------- board ---------- */
 
 .board {

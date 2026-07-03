@@ -306,6 +306,7 @@ const el = {
   difficultyBadge: $('puzzle-difficulty'),
   timer: $('timer'),
   practiceBadge: $('practice-badge'),
+  hint: $('hint'),
   board: $('board'),
   tiles: $('tiles'),
   operators: $('operators'),
@@ -363,9 +364,53 @@ let toastTimeout = null;
 function render() {
   renderTiles();
   renderOperators();
+  renderHint();
   el.btnUndo.disabled = game.locked || game.undoStack.length === 0;
   el.btnReset.disabled = game.locked;
   el.btnGiveup.disabled = game.locked;
+}
+
+// Plain (unparenthesized) text for a tile's value, for the hint line, e.g. "7" or "8/3".
+function tileValueText(tile) {
+  const f = formatFraction(tile.value);
+  return f.plain ? f.text : `${f.sign}${f.num}/${f.den}`;
+}
+
+function renderHint() {
+  if (!el.hint || game.locked) {
+    if (el.hint) el.hint.textContent = '';
+    return;
+  }
+  el.hint.classList.remove('hint-stuck');
+  const { first, op, second } = selection;
+
+  if (first === null) {
+    if (game.tiles.length === 1 && !game.tiles[0].value.equalsInt(24)) {
+      el.hint.classList.add('hint-stuck');
+      el.hint.textContent = 'Not 24 yet. Undo or Reset to try again.';
+    } else if (game.tiles.length > 1) {
+      el.hint.textContent = 'Tap a number to start';
+    } else {
+      el.hint.textContent = '';
+    }
+    return;
+  }
+
+  const firstTile = game.tiles.find((t) => t.id === first);
+  if (!firstTile) { el.hint.textContent = ''; return; }
+
+  if (op === null) {
+    el.hint.innerHTML = `${tileValueText(firstTile)} &mdash; choose an operator`;
+    return;
+  }
+
+  if (second === null) {
+    el.hint.innerHTML = `${tileValueText(firstTile)} <span class="hint-op">${OPSYM[op]}</span> &mdash; tap another number`;
+    return;
+  }
+
+  const secondTile = game.tiles.find((t) => t.id === second);
+  el.hint.innerHTML = `${tileValueText(firstTile)} <span class="hint-op">${OPSYM[op]}</span> ${tileValueText(secondTile)} &mdash; press Enter to confirm`;
 }
 
 function renderTiles() {
